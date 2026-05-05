@@ -6,7 +6,7 @@ on:
       - main
   workflow_dispatch:
 
-# Esto fuerza a GitHub a usar Node.js 24 y hace desaparecer el Warning
+# Forzamos la variable tanto a nivel de workflow como en el entorno del runner
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
@@ -18,15 +18,22 @@ jobs:
   test-aws-connection:
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout usando la última versión compatible con Node 24
       - name: Checkout código
         uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
+      # 2. Configurar credenciales de AWS con la v4 optimizada
       - name: Configurar credenciales de AWS (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: us-east-1 # Tu región de AWS
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
+      # 3. Probar conexión
       - name: Probar conexión con AWS CLI
         run: |
           aws sts get-caller-identity
